@@ -1,0 +1,3141 @@
+#LyX 2.0 created this file. For more info see http://www.lyx.org/
+\lyxformat 413
+\begin_document
+\begin_header
+\textclass article
+\begin_preamble
+\usepackage[boldfont,slantfont,CJKchecksingle]{xeCJK}
+\usepackage{indentfirst}
+\setCJKmainfont[BoldFont=SimHei,ItalicFont=楷体]{宋体}
+\setlength{\parindent}{2em}
+\renewcommand{\refname}{参考文献}
+
+\usepackage{hyperref}
+\usepackage{color}
+\definecolor{Blue}{rgb}{0,0,0.8}
+\hypersetup{%
+colorlinks,%
+plainpages=true,%
+%linkcolor=black,%
+%citecolor=black,%
+%urlcolor=Blue,%
+pdfstartview={XYZ null null 1},% 100%
+pdfview={XYZ null null null},%
+pdfpagemode=UseNone,% for no outline
+pdfauthor={R Core},%
+pdftitle={Package `parallel'}% Could also have pdfusetitle
+}
+
+\renewcommand{\refname}{参考文献}
+\end_preamble
+\options a4paper
+\use_default_options true
+\begin_modules
+knitr
+\end_modules
+\maintain_unincluded_children false
+\language chinese-simplified
+\language_package default
+\inputencoding utf8-plain
+\fontencoding global
+\font_roman default
+\font_sans default
+\font_typewriter DejaVu Sans Mono
+\font_default_family default
+\use_non_tex_fonts true
+\font_sc false
+\font_osf false
+\font_sf_scale 100
+\font_tt_scale 100
+
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\spacing onehalf
+\use_hyperref true
+\pdf_bookmarks true
+\pdf_bookmarksnumbered true
+\pdf_bookmarksopen true
+\pdf_bookmarksopenlevel 1
+\pdf_breaklinks false
+\pdf_pdfborder true
+\pdf_colorlinks true
+\pdf_backref false
+\pdf_pdfusetitle true
+\pdf_quoted_options "unicode=false"
+\papersize default
+\use_geometry true
+\use_amsmath 1
+\use_esint 1
+\use_mhchem 1
+\use_mathdots 1
+\cite_engine natbib_authoryear
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\use_refstyle 0
+\index 索引
+\shortcut idx
+\color #008000
+\end_index
+\leftmargin 2.5cm
+\topmargin 3cm
+\rightmargin 2.5cm
+\bottommargin 3cm
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+date{}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Title
+
+\series bold
+parallel软件包
+\end_layout
+
+\begin_layout Author
+R核心开发者
+\end_layout
+
+\begin_layout Standard
+\align center
+
+\shape italic
+翻译：yixuan 
+\shape default
+(
+\family typewriter
+
+\begin_inset Flex URL
+status collapsed
+
+\begin_layout Plain Layout
+
+http://yixuan.cos.name/cn/
+\end_layout
+
+\end_inset
+
+
+\family default
+)
+\end_layout
+
+\begin_layout Standard
+\align center
+
+\shape italic
+From统计之都
+\shape default
+(
+\begin_inset Flex URL
+status collapsed
+
+\begin_layout Plain Layout
+
+http://cos.name/
+\end_layout
+
+\end_inset
+
+)
+\end_layout
+
+\begin_layout Standard
+\align center
+
+\shape italic
+最近更新：
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+the
+\backslash
+year
+\end_layout
+
+\end_inset
+
+年
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+the
+\backslash
+month
+\end_layout
+
+\end_inset
+
+月
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+the
+\backslash
+day
+\end_layout
+
+\end_inset
+
+日
+\end_layout
+
+\begin_layout Standard
+
+\lang english
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<setup, include=FALSE, cache=FALSE>>=
+\end_layout
+
+\begin_layout Plain Layout
+
+# set global chunk options
+\end_layout
+
+\begin_layout Plain Layout
+
+opts_chunk$set(eval = FALSE, fig.width = 6, fig.height = 6, fig.align = 'center',
+ out.width = '0.8
+\backslash
+
+\backslash
+linewidth')
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+简介
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+parallel
+\series default
+软件包最早是在R 2.14.0被引入的，它基于CRAN软件包
+\series bold
+multicore
+\series default
+ 
+\begin_inset CommandInset citation
+LatexCommand citep
+key "multicore"
+
+\end_inset
+
+和
+\series bold
+snow
+\series default
+ 
+\begin_inset CommandInset citation
+LatexCommand citep
+key "snow"
+
+\end_inset
+
+已有的成果加以构建，并提供了两个软件包大部分的功能，同时还统一了生成随机数的操作。
+\end_layout
+
+\begin_layout Standard
+在计算过程中并行可以在多个层次上加以实现：本软件包基本上是“粗粒度并行”。在最精细的粒度上，现代CPU可以将若干个基本操作同时进行（例如整数和浮点数的代数运算）
+。此外，一些外部的BLAS库可以利用多线程来对部分的向量/矩阵操作进行并行化。一些R软件包则利用OpenMP或pthreads库来进行C语言层面的并行。
+\end_layout
+
+\begin_layout Standard
+本软件包考虑的是更多数据块下的并行计算。一个典型的例子是将一个相同的R函数应用到许多不同的数据集上，例如bootstrap计算中模拟出的多组数据集（或随机数序列
+本身就是要操作的数据）。这一问题的关键在于，数据块之间是彼此不相关的，并且不需要互相通信。通常，这些数据块上的计算会消耗近似相同的时间。对于此类问题，一个基本的
+计算模型为
+\end_layout
+
+\begin_layout Enumerate
+开启
+\begin_inset Formula $M$
+\end_inset
+
+个“工人”进程，并且对其进行初始化；
+\end_layout
+
+\begin_layout Enumerate
+将任务所需的数据发送给工人；
+\end_layout
+
+\begin_layout Enumerate
+将任务划分为大致相等的
+\begin_inset Formula $M$
+\end_inset
+
+份，然后将数据块（包括所需的R代码）发送给工人；
+\end_layout
+
+\begin_layout Enumerate
+等待所有工人完成各自的任务，并请求它们的结果；
+\end_layout
+
+\begin_layout Enumerate
+重复步骤2到4，完成后续所有的任务；
+\end_layout
+
+\begin_layout Enumerate
+关闭工人进程。
+\end_layout
+
+\begin_layout Standard
+其中的初始化过程可能包括加载软件包，以及初始化随机数序列等。
+\end_layout
+
+\begin_layout Standard
+本软件包中的
+\family typewriter
+mclapply
+\family default
+和
+\family typewriter
+parLapply
+\family default
+函数是对这一模型的具体实现，它们几乎可以无缝地替代
+\family typewriter
+lapply
+\family default
+。
+\end_layout
+
+\begin_layout Standard
+另一个略有不同的模型是将任务分为
+\begin_inset Formula $M_{1}>M$
+\end_inset
+
+个数据块，然后将前
+\begin_inset Formula $M$
+\end_inset
+
+个数据块分配给工人，等待任意一个工人完成任务，然后将剩下的某一个任务分配给它。请参阅“负载均衡”一节。
+\end_layout
+
+\begin_layout Standard
+原则上，工人可以通过线程
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+之所以是“原则上”，是因为R的解释器并不是线程安全的。
+\end_layout
+
+\end_inset
+
+或轻量级的进程来实现，但在当前的实现方式中，每一个工人都是完整的进程。它们可以通过如下三种方式进行创建：
+\end_layout
+
+\begin_layout Enumerate
+通过
+\family typewriter
+system("Rscript")
+\family default
+或类似的方法在当前机器（或一台类似的具有相同R版本的机器）上创建一个新的进程。接下来需要一种主进程和工人进程之间进行通信的机制，这通常通过socket来实现。
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+这种方式在所有的R平台上都可以使用，尽管可以预见的是，操作系统主动的安全防御措施可能会阻止进程间的socket通信。Windows和Mac OS
+ X的用户可能会看到防火墙弹出的对话框，询问R进程是否应该接受连接。
+\end_layout
+
+\begin_layout Standard
+我们采用
+\family typewriter
+snow
+\family default
+中的术语，将那些利用socket来监听主进程命令的工人进程称为节点“集群”。
+\end_layout
+
+\end_deeper
+\begin_layout Enumerate
+通过分流(forking)。
+\emph on
+分流(Fork)
+\emph default
+是POSIX操作系统中的概念
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+\begin_inset Flex URL
+status collapsed
+
+\begin_layout Plain Layout
+
+http://en.wikipedia.org/wiki/Fork_(operating_system)
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+，它在除Windows之外的所有R平台都能得到实现。分流将创建一个新的R进程，并将主进程进行一次完整的复制，包括主线程的工作空间和随机数序列的状态。然而，这种复
+制会（在适当的操作系统中）共享主进程的内存，直到内存发生改变。因此，分流通常是非常快的。
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+分流方法最早是被
+\series bold
+multicore
+\series default
+软件包采用的。
+\end_layout
+
+\begin_layout Standard
+注意到由于分流会复制整个进程，它将同样共享所有的GUI组件，例如R控制台以及屏幕上的图形设备。这可能会造成严重的问题。
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+在Mac OS X下需要格外小心，例如子进程会继承
+\family typewriter
+R.app
+\family default
+和
+\family typewriter
+quartz
+\family default
+设备的事件循环。这些信息可以通过C级别的
+\family typewriter
+Rboolean
+\family default
+变量
+\family typewriter
+R_isForkedChild
+\family default
+进行获取。
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+主进程与工人进程之间需要有一种通信机制。同样地，这里有若干种实现方式，因为主进程与工人进程是共享内存的。在
+\series bold
+multicore
+\series default
+中，原始的进程会将一个R表达式发送给工人进程，然后主进程打开一个管道，用于读取工人返回的结果。
+\series bold
+parallel
+\series default
+包支持这种方式，同时还支持通过socket进行通信的方式。
+\end_layout
+
+\end_deeper
+\begin_layout Enumerate
+利用操作系统级别的设施来将任务发送给群组内的其他机器。这种方式有若干种实现的办法，例如
+\series bold
+snow
+\series default
+软件包可以通过
+\series bold
+Rmpi
+\series default
+包来使用MPI（“消息传递接口”）。在这种方式下，通信开销(overheads)可能会占据大部分的计算时间，所以这种方法一般用于高速连接在一起的计算机群。
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+使用这一方式的CRAN软件包包括
+\series bold
+GridR
+\series default
+ （利用Condor或Globus）和
+\series bold
+Rsge
+\series default
+（利用SGE，现在称为“Oracle Grid Engine”）。
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+parallel
+\series default
+中提供的类似于
+\series bold
+snow
+\series default
+的函数都可以接受
+\series bold
+snow
+\series default
+集群作为参数，其中包括MPI集群。然而在本手册的后续部分，我们并不考虑这种可能。
+\end_layout
+
+\end_deeper
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+par 
+\end_layout
+
+\end_inset
+
+并行计算的格局随着共享内存式多核计算机的到来也发生了改变。直到2000年代末，进行并行计算的集群还主要是单核或双核的计算机。然而到了现在，即使是笔记本电脑都配备
+了双核或四核，而具有8个或更多核的服务器更是非常常见的配置。
+\series bold
+parallel
+\series default
+软件包在设计上就是想利用这样的硬件设施。当然，它也能用于通过（快速的）以太网连接在一起的计算机群，甚至每台计算机可以运行不同的操作系统，而只要求它们运行了相同版
+本的R。
+\end_layout
+
+\begin_layout Standard
+注意到以上所有的这些通信方法都使用了
+\family typewriter
+serialize
+\family default
+/
+\family typewriter
+unserialize
+\family default
+函数来在进程间发送R对象，而对象序列化之后的长度有所限制（通常为几亿个元素），因此一个进行了良好设计的算法应该避免达到这个限制。
+\end_layout
+
+\begin_layout Section
+CPU/核的数量
+\end_layout
+
+\begin_layout Standard
+在进行并行计算时，确定可用的CPU或核的数量往往是非常有帮助的。然而，这是一个相对不确定的概念。当前绝大多数的物理CPU都包含了两个或多个核，它们大体上是独立运
+行的（它们将共享内存，并可能共享部分的缓存）。然而，在某些处理器上这些核本身还可以同时运行多重的任务，并且在某些操作系统（如Windows）中，我们有
+\emph on
+逻辑
+\emph default
+CPU的概念，其数量可能会超过实际的核的个数。
+\end_layout
+
+\begin_layout Standard
+需要注意的是，程序所能决定的是可用的CPU和/或核的总数量，它不一定等于
+\emph on
+当前用户
+\emph default
+所能调配的CPU数量。例如，在多用户系统中用户能使用的CPU数量可能会受到系统的限制。同样地，对于当前的任务，程序检测出的CPU数目也不一定就是合理的：用户可能
+正在同时运行多个R进程，而且这些进程本身可能在运行多线程的BLAS库、OpenMP代码或其他底层的并行程序。我们甚至曾经见过
+\series bold
+multicore
+\series default
+中递归调用的
+\family typewriter
+mclapply
+\family default
+函数
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+
+\family typewriter
+parallel::mclapply
+\family default
+将会检测这一现象，然后以串行的方式运行嵌套的调用。
+\end_layout
+
+\end_inset
+
+，这将在
+\begin_inset Formula $n=16$
+\end_inset
+
+核的机器上产生
+\begin_inset Formula $2n+n^{2}$
+\end_inset
+
+个进程。
+\end_layout
+
+\begin_layout Standard
+但到目前为止，
+\family typewriter
+detectCores()
+\family default
+函数仍是一个有用的指导，它试图检测当前R所在机器的CPU核数量。在当前所有已知的R平台下，它都有相应的方法来完成这一任务。该函数是依赖于操作系统的：针对不同的平
+台，我们试图报告可用的物理核的数量。
+\end_layout
+
+\begin_layout Standard
+在Windows下，该函数默认的选项是报告逻辑CPU的数量。对于现代的硬件设备（例如Intel 
+\emph on
+Core i7
+\emph default
+），这应当是一个合理的参照，因为超线程技术确实能带来显著的性能提升。
+\family typewriter
+detectCores(logical = FALSE)
+\family default
+所返回的数量是与操作系统的版本相关的：在最近版本的Windows系统中，它报告的是物理核的数量，而在较老的版本中，它可能会返回物理CPU封装包的数量。
+\end_layout
+
+\begin_layout Section
+类似apply的函数
+\end_layout
+
+\begin_layout Standard
+目前为止对
+\series bold
+multicore
+\series default
+和
+\series bold
+snow
+\series default
+最常见的应用是将
+\family typewriter
+lapply
+\family default
+，
+\family typewriter
+sapply
+\family default
+，
+\family typewriter
+apply
+\family default
+和相关的函数替换为并行的版本。
+\end_layout
+
+\begin_layout Standard
+对于
+\family typewriter
+lapply
+\family default
+，类似的函数有
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<>>=
+\end_layout
+
+\begin_layout Plain Layout
+
+parLapply(cl, x, FUN, ...)
+\end_layout
+
+\begin_layout Plain Layout
+
+mclapply(X, FUN, ..., mc.cores)
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+其中
+\family typewriter
+mclapply
+\family default
+在Windows下不可用
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+一个例外是当
+\family typewriter
+mc.cores = 1
+\family default
+时会直接调用
+\family typewriter
+lapply
+\family default
+。
+\end_layout
+
+\end_inset
+
+，其他的参数在帮助页面中有所讨论。这两个函数在理念上有略微的不同：
+\family typewriter
+mclapply
+\family default
+会创建
+\family typewriter
+mc.cores
+\family default
+个工人，但它们仅仅用于这条语句的计算；
+\family typewriter
+parLapply
+\family default
+中的工人存在时间更长，通常由
+\family typewriter
+makeCluster
+\family default
+创建（同时还指定了集群的大小），并保存在对象
+\family typewriter
+cl
+\family default
+中。因此，这种方式下典型的工作流程是
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<>>=
+\end_layout
+
+\begin_layout Plain Layout
+
+cl <- makeCluster(<size of pool>)
+\end_layout
+
+\begin_layout Plain Layout
+
+# one or more parLapply calls
+\end_layout
+
+\begin_layout Plain Layout
+
+stopCluster(cl)
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+对于矩阵，软件包中提供了
+\family typewriter
+parApply
+\family default
+和
+\family typewriter
+parCapply
+\family default
+函数，以及更为常见的
+\family typewriter
+parRapply
+\family default
+，它是并行化的对矩阵的行进行操作的
+\family typewriter
+apply
+\family default
+函数。
+\end_layout
+
+\begin_layout Section
+SNOW集群
+\end_layout
+
+\begin_layout Standard
+本软件包的大部分代码来自于
+\series bold
+snow
+\series default
+包并进行了少量的修改，其中的函数同样可以用于
+\series bold
+snow
+\series default
+包所创建的集群（前提是
+\series bold
+snow
+\series default
+包位于搜索路径中）。
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+parallel
+\series default
+软件包中有两个函数可以用来创建SNOW集群：
+\family typewriter
+makePSOCKcluster
+\family default
+（一个改进的
+\family typewriter
+snow::makeSOCKcluster
+\family default
+）和
+\family typewriter
+makeForkCluster
+\family default
+（Windows下除外）。它们的区别在于生成工人进程的方式不同：
+\family typewriter
+makePSOCKcluster
+\family default
+利用
+\family typewriter
+Rscript
+\family default
+来启动R进程的副本（在相同的主机上或其他地方），而
+\family typewriter
+makeForkCluster
+\family default
+则在本机上分流出工人进程（因此它们继承了当前R会话的工作环境）。
+\end_layout
+
+\begin_layout Standard
+通常，这两个函数可以利用
+\family typewriter
+makeCluster
+\family default
+函数进行调用。
+\end_layout
+
+\begin_layout Standard
+对于每一个工人而言，
+\family typewriter
+stdout()
+\family default
+和
+\family typewriter
+stderr()
+\family default
+都将被重定向，默认的选择是丢弃所有的输出，但它们可以通过
+\family typewriter
+outfile
+\family default
+选项写入日志。注意到上一句话中的
+\family typewriter
+stdout()
+\family default
+和
+\family typewriter
+stderr()
+\family default
+指的是R中
+\emph on
+连接
+\emph default
+的名称，而不是C语言层级的文件句柄。这意味着，正常情况下R包中
+\family typewriter
+Rprintf
+\family default
+的输出将被重定向，而C语言层级的输出则不会。
+\end_layout
+
+\begin_layout Standard
+用户可以调用
+\family typewriter
+setDefaultCluster()
+\family default
+来设置集群的默认值：当用户调用了诸如
+\family typewriter
+parApply
+\family default
+之类的高层级函数但没有显式指定集群参数时，默认的集群将会被使用。当你准备反复使用某个集群时，需要注意的是这些工人的工作空间会不断积累上次使用后留下的R对象，并且
+某些软件包可能已经加入到了搜索路径中。
+\end_layout
+
+\begin_layout Standard
+如果集群不是创建在当前机器上（“
+\family typewriter
+localhost
+\family default
+”），那么
+\family typewriter
+makeCluster
+\family default
+可能需要提供更多的参数：
+\end_layout
+
+\begin_layout Itemize
+如果工人机器的配置与主机器不同（例如，它们可能具有不同的CPU架构），那么需要设置
+\family typewriter
+homogeneous = FALSE
+\family default
+，并且你可能还需要将
+\family typewriter
+rscript
+\family default
+参数设置为工人机器中
+\family typewriter
+Rscript
+\family default
+所在的完整路径。
+\end_layout
+
+\begin_layout Itemize
+工人机器需要知道如何与主机器进行通信：一般而言这可以通过主机名来实现（通过
+\family typewriter
+Sys.info()
+\family default
+函数获取），但在私有网络中，情况可能会有所不同，你也许需要为
+\family typewriter
+master
+\family default
+参数设定一个名称或一个IP地址，例如
+\family typewriter
+master = "192.168.1.1"
+\family default
+。
+\end_layout
+
+\begin_layout Itemize
+默认情况下
+\family typewriter
+ssh
+\family default
+将被用来在工人进程上启动R。如果该程序有其他的名称，例如在Windows下使用PUTTY，那么参数应设置为
+\family typewriter
+rshcmd = "plink.exe"
+\family default
+。此外，SSH应被设置为静默验证，如果它需要输入密码，那么它可能无法正常工作。
+\end_layout
+
+\begin_layout Itemize
+Socket通信使用的端口将从
+\family typewriter
+11000:11999
+\family default
+中随机选择：如果需要使用其他端口，则需要设定
+\family typewriter
+port
+\family default
+参数或环境变量
+\family typewriter
+R_PARALLEL_PORT
+\family default
+。
+\end_layout
+
+\begin_layout Section
+分流
+\end_layout
+
+\begin_layout Standard
+除了Windows系统之外，
+\series bold
+parallel
+\series default
+软件包还复制了
+\series bold
+multicore
+\series default
+软件包中带有
+\family typewriter
+mc
+\family default
+前缀的函数，例如
+\family typewriter
+mccollect
+\family default
+和
+\family typewriter
+mcparallel
+\family default
+。（
+\series bold
+multicore
+\series default
+软件包中包含了带前缀和不带前缀的两个版本，但不带前缀的函数名很容易被其他软件包屏蔽，例如
+\series bold
+lattice
+\series default
+软件包中也有一个名为
+\family typewriter
+parallel
+\family default
+的函数。）
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+parallel
+\series default
+包同样提供了
+\series bold
+multicore
+\series default
+中的底层函数，但它们没有从命名空间中导出。
+\end_layout
+
+\begin_layout Standard
+此外还有两个高层级的函数
+\family typewriter
+mclapply
+\family default
+和
+\family typewriter
+pvec
+\family default
+：与
+\series bold
+multicore
+\series default
+版本中的不同，本软件包中这些函数会默认使用两个处理器核，用户可以通过设定
+\family typewriter
+options("mc.cores")
+\family default
+来进行调节。当软件包被加载时，这个选项的默认值将从环境变量
+\family typewriter
+MC_CORES
+\family default
+进行读取。（将该选项设置为1会禁止并行操作：Windows下这些函数只是形式上地存在，它们会强制设置
+\family typewriter
+mc.cores = 1
+\family default
+。）
+\end_layout
+
+\begin_layout Standard
+从R 2.15.0开始，
+\family typewriter
+mcmapply
+\family default
+和
+\family typewriter
+mcMap
+\family default
+提供了类似于
+\family typewriter
+mapply
+\family default
+和
+\family typewriter
+Map
+\family default
+的功能。
+\end_layout
+
+\begin_layout Standard
+请留意本文档之前提及的在GUI环境中使用分流的注意事项。
+\end_layout
+
+\begin_layout Standard
+在同一次会话中，R的主进程和分流出的进程享有共同的临时目录
+\family typewriter
+tempdir()
+\family default
+，这可能会造成一些问题，因为许多程序假定这个目录对于R进程是私有的。此外在R 2.14.1之前，两个进程可能会通过
+\family typewriter
+tempfile
+\family default
+在临时目录中选择到相同的临时文件并同时对其操作，而它们并不知道这个文件是否正在被其他进程所使用。
+\end_layout
+
+\begin_layout Standard
+分流出的工人进程与主进程享有共同的文件句柄，这意味着所有工人进程的输出都将定向到主进程中“
+\family typewriter
+stdout
+\family default
+”和“
+\family typewriter
+stderr
+\family default
+”所指向的位置。（这并不是在所有操作系统上都成立；当主进程正在从“
+\family typewriter
+stdin
+\family default
+”进行批量读取时，分流也可能会造成一些问题。）设置参数
+\family typewriter
+mc.silent = TRUE
+\family default
+会关闭子进程的“
+\family typewriter
+stdout
+\family default
+”输出，而“
+\family typewriter
+stderr
+\family default
+”不受影响。
+\end_layout
+
+\begin_layout Standard
+共享文件句柄的机制同样会对图形设备产生影响，因为分流出的工人会继承所有已打开的主进程的图形设备。子进程不应修改这些内容。
+\end_layout
+
+\begin_layout Section
+随机数生成
+\end_layout
+
+\begin_layout Standard
+当并行计算中需要利用（伪）随机数时，有一些注意事项应格外小心：运行计算任务的各进程/线程需要运行独立的（最好是可重复的）随机数序列。只要条件允许，一个能避免诸多
+麻烦的办法是将所有生成随机数的过程都在主进程中完成。在
+\series bold
+boot
+\series default
+软件包（
+\family typewriter
+1.3-1
+\family default
+及以后的版本）中，只要有可能就会采用这种办法来生成随机数序列。
+\end_layout
+
+\begin_layout Standard
+当一个R进程启动时，它会从已保存的工作空间中读取对象
+\begin_inset space \space{}
+\end_inset
+
+
+\family typewriter
+.Random.seed
+\family default
+来设置随机数种子，或者如果之前没有保存工作空间，则会在随机数生成器第一次使用时根据系统时钟和进程ID来设置种子（参见
+\family typewriter
+RNG
+\family default
+的帮助）。因此，在两种情况下工人进程会具有相同的随机数种子——一是包含了
+\begin_inset space \space{}
+\end_inset
+
+
+\family typewriter
+.Random.seed
+\family default
+的工作空间被还原，二是主进程在分流之前已经使用了随机数生成器。如果以上二者皆非，那么工人进程将得到不可重复的随机数种子（但以很大的概率使得所有工人的种子互不相同
+）。
+\end_layout
+
+\begin_layout Standard
+另一种可选的办法是在主进程中生成一系列的随机数，然后以此作为工人进程的随机数种子，从而使得结果可重复。一般而言这样的做法已经很安全了，但也有人担心这样会使得不同
+工人上的随机数序列有接近的趋势。对此，一种解决办法是在选取种子时，尽量隔开一定的距离进行选取；然而，在一个随机数序列中，离得远的随机数不一定就比离得近时更加独立
+。另一种想法（如
+\series bold
+JAGS
+\series default
+包所使用的）是让每个独立的进程使用不同的随机数发生器。
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+parallel
+\series default
+包所使用的方法是 
+\begin_inset CommandInset citation
+LatexCommand citet
+key "lecuyer.2002"
+
+\end_inset
+
+的一个实现：这种方法使用单一的随机数生成器，在这个生成器产生的随机数序列中（周期大约为
+\begin_inset Formula $2^{191}$
+\end_inset
+
+），每隔
+\begin_inset Formula $2^{127}$
+\end_inset
+
+步选取一个数作为随机数种子，并生成随机数
+\emph on
+序列
+\emph default
+。生成器采用的是 
+\begin_inset CommandInset citation
+LatexCommand citet
+key "lecuyer.1999"
+
+\end_inset
+
+中的生成器，选择它的原因
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+除了因为这是作者们的共识！
+\end_layout
+
+\end_inset
+
+是它具有相对长的周期和相对小的种子（6个整数），同时，不像R中默认的
+\family typewriter
+ "Mersenne-Twister"
+\family default
+生成器，这种方法能方便地计算固定步数之后的下一个种子值。生成器的算法如下：
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+原文的这句话不太理解
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{eqnarray*}
+x_{n} & = & 1403580\times x_{n-2}-810728\times x_{n-3}\quad\mathrm{mod}\ (2^{32}-209)\\
+y_{n} & = & 527612\times y_{n-1}-1370589\times y_{n-3}\quad\mathrm{mod}\ (2^{32}-22853)\\
+z_{n} & = & (x_{n}-y_{n})\quad\mathrm{mod}\ 4294967087\\
+u_{n} & = & z_{n}/4294967088\ \mbox{unless \ensuremath{z_{n}=0}}
+\end{eqnarray*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+得到的种子即为
+\begin_inset Formula $(x_{n},x_{n-1},x_{n-2},y_{n},y_{n-1},y_{n-2})$
+\end_inset
+
+，而且
+\begin_inset Formula $k$
+\end_inset
+
+步迭代之后
+\begin_inset Formula $x_{n}$
+\end_inset
+
+和
+\begin_inset Formula $y_{n}$
+\end_inset
+
+的系数可以预先进行计算。对于
+\begin_inset Formula $k=2^{127}$
+\end_inset
+
+，可以通过R函数
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<>>=
+\end_layout
+
+\begin_layout Plain Layout
+
+.Random.seed <- nextRNGStream(.Random.seed)
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+noindent 
+\end_layout
+
+\end_inset
+
+来计算
+\begin_inset Formula $k$
+\end_inset
+
+步之后的种子值。
+\end_layout
+
+\begin_layout Standard
+从2.14.0开始，R开始支持 
+\begin_inset CommandInset citation
+LatexCommand citet
+key "lecuyer.1999"
+
+\end_inset
+
+随机数发生器，对应的函数为
+\begin_inset Newline newline
+\end_inset
+
+
+\family typewriter
+RNGkind("L'Ecuyer-CMRG")
+\family default
+。因此，要实现 
+\begin_inset CommandInset citation
+LatexCommand citet
+key "lecuyer.2002"
+
+\end_inset
+
+中的想法，我们只需运行
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<>>=
+\end_layout
+
+\begin_layout Plain Layout
+
+RNGkind("L'Ecuyer-CMRG")
+\end_layout
+
+\begin_layout Plain Layout
+
+set.seed(<something>)
+\end_layout
+
+\begin_layout Plain Layout
+
+## start M workers
+\end_layout
+
+\begin_layout Plain Layout
+
+s <- .Random.seed
+\end_layout
+
+\begin_layout Plain Layout
+
+for (i in 1:M) {
+\end_layout
+
+\begin_layout Plain Layout
+
+    s <- nextRNGStream(s)
+\end_layout
+
+\begin_layout Plain Layout
+
+    # send s to worker i as .Random.seed
+\end_layout
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+对于SNOW集群，上述代码已经在
+\family typewriter
+clusterSetRNGStream
+\family default
+函数中得以实现，并成为
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+mcparallel
+\family default
+和
+\family typewriter
+mclapply
+\family default
+（默认情形下）函数的一部分。
+\end_layout
+
+\begin_layout Standard
+除了
+\emph on
+序列
+\emph default
+（
+\begin_inset Formula $2^{127}$
+\end_inset
+
+步）之外，还有
+\emph on
+子序列
+\emph default
+的概念，它是每隔
+\begin_inset Formula $2^{76}$
+\end_inset
+
+步选取一个种子。函数
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+nextRNGSubStream
+\family default
+可以让当前的状态移至下一个子序列。
+\end_layout
+
+\begin_layout Standard
+CRAN软件包
+\series bold
+rlecuyer
+\series default
+ 
+\begin_inset CommandInset citation
+LatexCommand citep
+key "rlecuyer"
+
+\end_inset
+
+提供了一个直接的针对原始（更重量级）C实现的R接口。这个程序针对命名序列进行操作，每个序列都包含了3个种子（每个种子由6个元素构成）。在R中，可以通过适时地保存
+\begin_inset space \space{}
+\end_inset
+
+
+\family typewriter
+.Random.seed
+\family default
+来模拟这一特性。
+\series bold
+rstream
+\series default
+包
+\begin_inset CommandInset citation
+LatexCommand citep
+key "rstream"
+
+\end_inset
+
+提供了另一个利用S4类实现的接口。
+\end_layout
+
+\begin_layout Section
+负载均衡
+\end_layout
+
+\begin_layout Standard
+在第一节的简介中我们提及了一种动态分配任务给工人的策略：通常这被称为“负载均衡”，它可以通过
+\family typewriter
+mclapply(mc.preschedule = FALSE)
+\family default
+，
+\family typewriter
+clusterApplyLB
+\family default
+和封装函数
+\family typewriter
+parLapplyLB
+\family default
+、
+\family typewriter
+clusterMap(.scheduling = "dynamic")
+\family default
+来实现。
+\end_layout
+
+\begin_layout Standard
+当不同任务的计算时间有很大的不同，或不同节点的计算能力相异时，负载均衡就能突显其优势所在，但有一些注意事项需要留心：
+\end_layout
+
+\begin_layout Enumerate
+随机数序列会分配给节点，所以当节点的任务涉及随机数生成时，它们很有可能是不可重复的（因为任务的分配依赖于节点的工作量）。当然，我们只需一点额外的工作，就可以针对
+每个任务预先分配好随机数序列。
+\end_layout
+
+\begin_layout Enumerate
+更加需要注意的是任务的分配。假设有1000个任务要分配给10个节点，标准的途径是将每100个任务的区块分配给一个节点，而负载均衡的方法则是每次将一个任务分给一个
+节点，这样一来 ，通信的开销将会很大。所以，合理的选择是让任务数多于节点数，但不超过100倍（甚至不应超过10倍）。
+\end_layout
+
+\begin_layout Section
+可移植性考虑
+\end_layout
+
+\begin_layout Standard
+对于那些想把并行计算纳入代码中的开发者，他们需要决定在多大程度上程序是可移植并且高效率的：没有一种办法能在所有的平台上都保持最优。
+\end_layout
+
+\begin_layout Standard
+使用
+\family typewriter
+mclapply
+\family default
+通常是最简单的办法，但在Windows下，这个函数是以串行方式运行的。如果并行计算只是在一台多核的类Unix单机服务器上运行，那么这样的设置就已经足够了——这是
+因为
+\family typewriter
+mclapply
+\family default
+只能运行在共享内存的单机系统中。此外，这种方法能向后兼容，如果需要串行，只需要设置
+\family typewriter
+mc.cores = 1
+\family default
+。
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+parLapply
+\family default
+可以在任何支持socket通信的系统中运行，而且可以利用一个实验室内所有空闲的CPU核。但即使是在一台机器上，socket通信也可能被系统拦截，而对于一个实验室
+内的计算机网络，这种现象将极有可能发生。目前这种方法还无法向串行进行兼容，在未来似乎也不太可能实现（这是因为工人开启了一个与主进程不同的R环境）。
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+1.3-3
+\family default
+之后版本的
+\series bold
+boot
+\series default
+软件包提供了使用以上两种方法的代码实例，它同时还提供了串行版本的代码。
+\end_layout
+
+\begin_layout Section
+扩展案例
+\end_layout
+
+\begin_layout Standard
+在统计学中，粗粒度并行最常见的应用或许就是进行多重的随机模拟，例如大量的bootstrap抽样，或多次的MCMC模拟。我们为这两类问题分别举一个例子。
+\end_layout
+
+\begin_layout Standard
+注意到有些例子在Windows下只能以串行的方式进行，有些则是具有非常大的计算强度。
+\end_layout
+
+\begin_layout Subsection
+Bootstrapping
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+boot
+\series default
+软件包
+\begin_inset CommandInset citation
+LatexCommand citep
+key "boot"
+
+\end_inset
+
+是 
+\begin_inset CommandInset citation
+LatexCommand citet
+key "Davison.Hinkley.97"
+
+\end_inset
+
+所写专著的支持软件。Bootstrap是简单并行的一个常见的例子，一些计算置信区间的方法都需要上千次的bootstrap抽样。
+\series bold
+boot
+\series default
+软件包从
+\family typewriter
+1.3-1
+\family default
+版本开始已经在其主函数中内置了并行的支持，但在这里我们将演示如何将原始的（串行）函数进行并行化。
+\end_layout
+
+\begin_layout Standard
+我们考虑两个利用
+\family typewriter
+cd4
+\family default
+数据集的例子。
+\family typewriter
+cd4
+\family default
+来自于
+\series bold
+boot
+\series default
+包，我们关心的是CD4细胞数量前后两次测量之间的相关性。第一个例子是直接的模拟，通常称为
+\emph on
+参数bootstrap
+\emph default
+。非并行的版本如下所示：
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<>>=
+\end_layout
+
+\begin_layout Plain Layout
+
+library(boot)
+\end_layout
+
+\begin_layout Plain Layout
+
+cd4.rg <- function(data, mle) MASS::mvrnorm(nrow(data), mle$m, mle$v)
+\end_layout
+
+\begin_layout Plain Layout
+
+cd4.mle <- list(m = colMeans(cd4), v = var(cd4))
+\end_layout
+
+\begin_layout Plain Layout
+
+cd4.boot <- boot(cd4, corr, R = 999, sim = "parametric",
+\end_layout
+
+\begin_layout Plain Layout
+
+                 ran.gen = cd4.rg, mle = cd4.mle)
+\end_layout
+
+\begin_layout Plain Layout
+
+boot.ci(cd4.boot,  type = c("norm", "basic", "perc"),
+\end_layout
+
+\begin_layout Plain Layout
+
+        conf = 0.9, h = atanh, hinv = tanh)
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+要利用
+\family typewriter
+mclapply
+\family default
+实现并行，我们需要将完整的模拟分成若干次完成，在这里我们将同时运行两轮模拟，每轮进行500次重抽样：
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<>>=
+\end_layout
+
+\begin_layout Plain Layout
+
+cd4.rg <- function(data, mle) MASS::mvrnorm(nrow(data), mle$m, mle$v)
+\end_layout
+
+\begin_layout Plain Layout
+
+cd4.mle <- list(m = colMeans(cd4), v = var(cd4))
+\end_layout
+
+\begin_layout Plain Layout
+
+run1 <- function(...) boot(cd4, corr, R = 500, sim = "parametric",
+\end_layout
+
+\begin_layout Plain Layout
+
+                           ran.gen = cd4.rg, mle = cd4.mle)
+\end_layout
+
+\begin_layout Plain Layout
+
+mc <- 2 # set as appropriate for your hardware
+\end_layout
+
+\begin_layout Plain Layout
+
+## To make this reproducible:
+\end_layout
+
+\begin_layout Plain Layout
+
+set.seed(123, "L'Ecuyer")
+\end_layout
+
+\begin_layout Plain Layout
+
+cd4.boot <- do.call(c, mclapply(seq_len(mc), run1) )
+\end_layout
+
+\begin_layout Plain Layout
+
+boot.ci(cd4.boot,  type = c("norm", "basic", "perc"),
+\end_layout
+
+\begin_layout Plain Layout
+
+        conf = 0.9, h = atanh, hinv = tanh)
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+在很多情况下我们都会进行类似的编程：将运算封装到一个函数之中，从而使程序变得简洁。上述代码的倒数第二条语句，正是并行版本的
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<>>=
+\end_layout
+
+\begin_layout Plain Layout
+
+do.call(c, lapply(seq_len(mc), run1))
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+如果希望利用
+\family typewriter
+parLapply
+\family default
+来实现并行，我们可以进行类似的操作：
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<>>=
+\end_layout
+
+\begin_layout Plain Layout
+
+run1 <- function(...) {
+\end_layout
+
+\begin_layout Plain Layout
+
+   library(boot)
+\end_layout
+
+\begin_layout Plain Layout
+
+   cd4.rg <- function(data, mle) MASS::mvrnorm(nrow(data), mle$m, mle$v)
+\end_layout
+
+\begin_layout Plain Layout
+
+   cd4.mle <- list(m = colMeans(cd4), v = var(cd4))
+\end_layout
+
+\begin_layout Plain Layout
+
+   boot(cd4, corr, R = 500, sim = "parametric",
+\end_layout
+
+\begin_layout Plain Layout
+
+        ran.gen = cd4.rg, mle = cd4.mle)
+\end_layout
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\begin_layout Plain Layout
+
+cl <- makeCluster(mc)
+\end_layout
+
+\begin_layout Plain Layout
+
+## make this reproducible
+\end_layout
+
+\begin_layout Plain Layout
+
+clusterSetRNGStream(cl, 123)
+\end_layout
+
+\begin_layout Plain Layout
+
+library(boot) # needed for c() method on master
+\end_layout
+
+\begin_layout Plain Layout
+
+cd4.boot <- do.call(c, parLapply(cl, seq_len(mc), run1) )
+\end_layout
+
+\begin_layout Plain Layout
+
+boot.ci(cd4.boot,  type = c("norm", "basic", "perc"),
+\end_layout
+
+\begin_layout Plain Layout
+
+        conf = 0.9, h = atanh, hinv = tanh)
+\end_layout
+
+\begin_layout Plain Layout
+
+stopCluster(cl)
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+注意到在
+\family typewriter
+mclapply
+\family default
+中，所有我们用到的软件包和对象都会自动继承给工人进程，而
+\family typewriter
+parLapply
+\family default
+则一般没有这种特性
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+一个例外是使用
+\family typewriter
+makeForkCluster
+\family default
+创建集群。
+\end_layout
+
+\end_inset
+
+。此外，将计算任务分配给哪个进程也是一个需要考虑的问题：例如，我们可以将
+\family typewriter
+cd4.mle
+\family default
+的计算交给工人（如上例），或将其交给主进程然后把返回值传递给工人。对于后者，我们将其代码展示如下：
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<>>=
+\end_layout
+
+\begin_layout Plain Layout
+
+cl <- makeCluster(mc)
+\end_layout
+
+\begin_layout Plain Layout
+
+cd4.rg <- function(data, mle) MASS::mvrnorm(nrow(data), mle$m, mle$v)
+\end_layout
+
+\begin_layout Plain Layout
+
+cd4.mle <- list(m = colMeans(cd4), v = var(cd4))
+\end_layout
+
+\begin_layout Plain Layout
+
+clusterExport(cl, c("cd4.rg", "cd4.mle"))
+\end_layout
+
+\begin_layout Plain Layout
+
+junk <- clusterEvalQ(cl, library(boot)) # discard result
+\end_layout
+
+\begin_layout Plain Layout
+
+clusterSetRNGStream(cl, 123)
+\end_layout
+
+\begin_layout Plain Layout
+
+res <- clusterEvalQ(cl, boot(cd4, corr, R = 500,
+\end_layout
+
+\begin_layout Plain Layout
+
+                    sim = "parametric", ran.gen = cd4.rg, mle = cd4.mle))
+\end_layout
+
+\begin_layout Plain Layout
+
+library(boot) # needed for c() method on master
+\end_layout
+
+\begin_layout Plain Layout
+
+cd4.boot <- do.call(c, res)
+\end_layout
+
+\begin_layout Plain Layout
+
+boot.ci(cd4.boot,  type = c("norm", "basic", "perc"),
+\end_layout
+
+\begin_layout Plain Layout
+
+        conf = 0.9, h = atanh, hinv = tanh)
+\end_layout
+
+\begin_layout Plain Layout
+
+stopCluster(cl)
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+对于相同的问题，如果采用二重bootstrap，则其计算量要远大于之前的版本，标准的程序代码是
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<eval=TRUE,cache=TRUE>>=
+\end_layout
+
+\begin_layout Plain Layout
+
+library(boot)
+\end_layout
+
+\begin_layout Plain Layout
+
+R <- 999; M <- 999 ## we would like at least 999 each
+\end_layout
+
+\begin_layout Plain Layout
+
+cd4.nest <- boot(cd4, nested.corr, R=R, stype="w", t0=corr(cd4), M=M)
+\end_layout
+
+\begin_layout Plain Layout
+
+## nested.corr is a function in package boot
+\end_layout
+
+\begin_layout Plain Layout
+
+op <- par(pty = "s", xaxs = "i", yaxs = "i")
+\end_layout
+
+\begin_layout Plain Layout
+
+qqplot((1:R)/(R+1), cd4.nest$t[, 2], pch = ".", asp = 1,
+\end_layout
+
+\begin_layout Plain Layout
+
+        xlab = "nominal", ylab = "estimated")
+\end_layout
+
+\begin_layout Plain Layout
+
+abline(a = 0, b = 1, col = "grey")
+\end_layout
+
+\begin_layout Plain Layout
+
+abline(h = 0.05, col = "grey")
+\end_layout
+
+\begin_layout Plain Layout
+
+abline(h = 0.95, col = "grey")
+\end_layout
+
+\begin_layout Plain Layout
+
+par(op)
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+nominal <- (1:R)/(R+1)
+\end_layout
+
+\begin_layout Plain Layout
+
+actual <- cd4.nest$t[, 2]
+\end_layout
+
+\begin_layout Plain Layout
+
+100*nominal[c(sum(actual <= 0.05), sum(actual < 0.95))]
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+在一台8核的Linux服务器上，如果只使用一个核，程序将运行55秒。
+\end_layout
+
+\begin_layout Standard
+如果使用
+\family typewriter
+mclapply
+\family default
+，则代码为
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<>>=
+\end_layout
+
+\begin_layout Plain Layout
+
+mc <- 9
+\end_layout
+
+\begin_layout Plain Layout
+
+R <- 999; M <- 999; RR <- floor(R/mc)
+\end_layout
+
+\begin_layout Plain Layout
+
+run2 <- function(...)
+\end_layout
+
+\begin_layout Plain Layout
+
+    cd4.nest <- boot(cd4, nested.corr, R=RR, stype="w", t0=corr(cd4), M=M)
+\end_layout
+
+\begin_layout Plain Layout
+
+cd4.nest <- do.call(c, mclapply(seq_len(mc), run2, mc.cores = mc) )
+\end_layout
+
+\begin_layout Plain Layout
+
+nominal <- (1:R)/(R+1)
+\end_layout
+
+\begin_layout Plain Layout
+
+actual <- cd4.nest$t[, 2]
+\end_layout
+
+\begin_layout Plain Layout
+
+100*nominal[c(sum(actual <= 0.05), sum(actual < 0.95))]
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+该程序使用了服务器上所有的核，共运行了11秒（流逝时间）。
+\end_layout
+
+\begin_layout Subsection
+MCMC模拟
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset citation
+LatexCommand citet
+key "Ripley.88"
+
+\end_inset
+
+讨论了Strauss过程的极大似然估计，它是矩方程
+\begin_inset Formula 
+\[
+E_{c}T=t
+\]
+
+\end_inset
+
+的解，其中
+\begin_inset Formula $T$
+\end_inset
+
+是
+\begin_inset Formula $R$
+\end_inset
+
+-close pairs的数量，
+\begin_inset Formula $t$
+\end_inset
+
+是其观测值，在下例中即为30。一个串行版本的尝试如下所示：
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<eval=TRUE,cache=TRUE,tidy=FALSE,out.width= '0.7
+\backslash
+
+\backslash
+linewidth'>>=
+\end_layout
+
+\begin_layout Plain Layout
+
+library(spatial)
+\end_layout
+
+\begin_layout Plain Layout
+
+towns <- ppinit("towns.dat")
+\end_layout
+
+\begin_layout Plain Layout
+
+tget <- function(x, r = 3.5) sum(dist(cbind(x$x, x$y)) < r)
+\end_layout
+
+\begin_layout Plain Layout
+
+t0 <- tget(towns)
+\end_layout
+
+\begin_layout Plain Layout
+
+R <- 1000
+\end_layout
+
+\begin_layout Plain Layout
+
+c <- seq(0, 1, 0.1)
+\end_layout
+
+\begin_layout Plain Layout
+
+## res[1] = 0
+\end_layout
+
+\begin_layout Plain Layout
+
+res <- c(0, sapply(c[-1],
+\end_layout
+
+\begin_layout Plain Layout
+
+    function(c) mean(replicate(R, tget(Strauss(69, c=c, r=3.5)))))
+\end_layout
+
+\begin_layout Plain Layout
+
+        )
+\end_layout
+
+\begin_layout Plain Layout
+
+plot(c, res, type = "l", ylab = "E t")
+\end_layout
+
+\begin_layout Plain Layout
+
+abline(h = t0, col = "grey")
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+如今这段代码大约需要运行20秒，但当它在1985年首次完成时，需要运行许多个小时。一个并行的版本大致为
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<>>=
+\end_layout
+
+\begin_layout Plain Layout
+
+run3 <- function(c) {
+\end_layout
+
+\begin_layout Plain Layout
+
+    library(spatial)
+\end_layout
+
+\begin_layout Plain Layout
+
+    towns <- ppinit("towns.dat") # has side effects
+\end_layout
+
+\begin_layout Plain Layout
+
+    mean(replicate(R, tget(Strauss(69, c=c, r=3.5))))
+\end_layout
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\begin_layout Plain Layout
+
+cl <- makeCluster(10, methods = FALSE)
+\end_layout
+
+\begin_layout Plain Layout
+
+clusterExport(cl, c("R", "towns", "tget"))
+\end_layout
+
+\begin_layout Plain Layout
+
+res <- c(0, parSapply(cl, c[-1], run3)) # 10 tasks
+\end_layout
+
+\begin_layout Plain Layout
+
+stopCluster(cl)
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+这段程序只运行了4.5秒，再加上2秒钟的时间用以建立集群。如果使用分流集群（无法在Windows下实现），那么程序的启动会更加快速，同时配置也更加简单：
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<>>=
+\end_layout
+
+\begin_layout Plain Layout
+
+cl <- makeForkCluster(10)  # fork after the variables have been set up
+\end_layout
+
+\begin_layout Plain Layout
+
+run4 <- function(c)  mean(replicate(R, tget(Strauss(69, c=c, r=3.5))))
+\end_layout
+
+\begin_layout Plain Layout
+
+res <- c(0, parSapply(cl, c[-1], run4))
+\end_layout
+
+\begin_layout Plain Layout
+
+stopCluster(cl)
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+如你所预料的那样，
+\family typewriter
+mclapply
+\family default
+的版本会更加简洁：
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<>>=
+\end_layout
+
+\begin_layout Plain Layout
+
+run4 <- function(c)  mean(replicate(R, tget(Strauss(69, c=c, r=3.5))))
+\end_layout
+
+\begin_layout Plain Layout
+
+res <- c(0, unlist(mclapply(c[-1], run4, mc.cores = 10)))
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+如果你的机器不具有10个左右的核，那么你可能会考虑对任务进行负载均衡的处理，因为每段模拟所消耗的时间会随着
+\family typewriter
+c
+\family default
+的变化而变化。这可以通过
+\family typewriter
+mclapply(mc.preschedule = FALSE)
+\family default
+或
+\family typewriter
+parSapplyLB
+\family default
+来实现。而这样的劣势在于结果是不可重复的（在此处无关紧要）。
+\end_layout
+
+\begin_layout Subsection
+软件包安装
+\end_layout
+
+\begin_layout Standard
+当前已经有超过4000个可用的R包，如果你想进行一次完整的安装，那么将这个过程并行化将是非常有帮助的。在
+\family typewriter
+install.packages
+\family default
+中，我们通过并行的
+\family typewriter
+make
+\family default
+实现了这一功能，但这种方法可能并不合适。
+\begin_inset Foot
+status collapsed
+
+\begin_layout Plain Layout
+首先，系统可能不支持并行的
+\family typewriter
+make
+\family default
+，此外我们发现有一些软件包无法通过
+\family typewriter
+make
+\family default
+正确地安装。
+\end_layout
+
+\end_inset
+
+运行的过程中，某一些任务的运行时间可能比其他的长得多，但我们无法事先预知哪些任务是这种情况。
+\end_layout
+
+\begin_layout Standard
+我们在此展示一个用
+\series bold
+parallel
+\series default
+安装软件包的例子，它目前也用于CRAN对软件包进行核查的过程。假设有一个函数
+\family typewriter
+do_one(pkg)
+\family default
+，它用来安装一个单个的软件包然后返回。接下来的任务就是将
+\family typewriter
+do_one
+\family default
+运行在尽可能多的
+\family typewriter
+M
+\family default
+个工人上，同时保证在安装
+\family typewriter
+pkg
+\family default
+之前，它所有（直接的和间接的）依赖的软件包都已被安装。由于安装单个软件包时可能会屏蔽其他的包，因此我们应允许同时运行的任务数有所变化。下面的代码实现了这一效果，
+但需要用到一些底层的函数。
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<tidy=FALSE>>=
+\end_layout
+
+\begin_layout Plain Layout
+
+pkgs <- "<names of packages to be installed>"
+\end_layout
+
+\begin_layout Plain Layout
+
+M <- 20 # number of parallel installs
+\end_layout
+
+\begin_layout Plain Layout
+
+M <- min(M, length(pkgs))
+\end_layout
+
+\begin_layout Plain Layout
+
+library(parallel)
+\end_layout
+
+\begin_layout Plain Layout
+
+unlink("install_log")
+\end_layout
+
+\begin_layout Plain Layout
+
+cl <- makeCluster(M, outfile = "install_log")
+\end_layout
+
+\begin_layout Plain Layout
+
+clusterExport(cl, c("tars", "fakes", "gcc")) # variables needed by do_one
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+## set up available via a call to available.packages() for
+\end_layout
+
+\begin_layout Plain Layout
+
+## repositories containing all the packages involved and all their
+\end_layout
+
+\begin_layout Plain Layout
+
+## dependencies.
+\end_layout
+
+\begin_layout Plain Layout
+
+DL <- utils:::.make_dependency_list(pkgs, available, recursive = TRUE)
+\end_layout
+
+\begin_layout Plain Layout
+
+DL <- lapply(DL, function(x) x[x %in% pkgs])
+\end_layout
+
+\begin_layout Plain Layout
+
+lens <- sapply(DL, length)
+\end_layout
+
+\begin_layout Plain Layout
+
+ready <- names(DL[lens == 0L])
+\end_layout
+
+\begin_layout Plain Layout
+
+done <- character() # packages already installed
+\end_layout
+
+\begin_layout Plain Layout
+
+n <- length(ready)
+\end_layout
+
+\begin_layout Plain Layout
+
+submit <- function(node, pkg)
+\end_layout
+
+\begin_layout Plain Layout
+
+    parallel:::sendCall(cl[[node]], do_one, list(pkg), tag = pkg)
+\end_layout
+
+\begin_layout Plain Layout
+
+for (i in 1:min(n, M)) submit(i, ready[i])
+\end_layout
+
+\begin_layout Plain Layout
+
+DL <- DL[!names(DL) %in% ready[1:min(n, M)]]
+\end_layout
+
+\begin_layout Plain Layout
+
+av <- if(n < M) (n+1L):M else integer() # available workers
+\end_layout
+
+\begin_layout Plain Layout
+
+while(length(done) < length(pkgs)) {
+\end_layout
+
+\begin_layout Plain Layout
+
+    d <- parallel:::recvOneResult(cl)
+\end_layout
+
+\begin_layout Plain Layout
+
+    av <- c(av, d$node)
+\end_layout
+
+\begin_layout Plain Layout
+
+    done <- c(done, d$tag)
+\end_layout
+
+\begin_layout Plain Layout
+
+    OK <- unlist(lapply(DL, function(x) all(x %in% done) ))
+\end_layout
+
+\begin_layout Plain Layout
+
+    if (!any(OK)) next
+\end_layout
+
+\begin_layout Plain Layout
+
+    p <- names(DL)[OK]
+\end_layout
+
+\begin_layout Plain Layout
+
+    m <- min(length(p), length(av)) # >= 1
+\end_layout
+
+\begin_layout Plain Layout
+
+    for (i in 1:m) submit(av[i], p[i])
+\end_layout
+
+\begin_layout Plain Layout
+
+    av <- av[-(1:m)]
+\end_layout
+
+\begin_layout Plain Layout
+
+    DL <- DL[!names(DL) %in% p[1:m]]
+\end_layout
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+传递“
+\family typewriter
+...
+\family default
+”
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+本节有些术语不太熟悉，可能有一些错误
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+“
+\family typewriter
+...
+\family default
+”的语法在并行计算中并不能很好地工作，这是因为在任务发送给工人之前，惰性求值（lazy evaluation）可能会有所延迟。而在分流方法中则不存在这个问题，因
+为惰性求值所需要的信息都存在于分流出的工人中。
+\end_layout
+
+\begin_layout Standard
+对于类似于
+\series bold
+snow
+\series default
+的集群，解决的办法是让
+\begin_inset space ~
+\end_inset
+
+
+\family typewriter
+...
+\family default
+中的promise对象
+\begin_inset Foot
+status collapsed
+
+\begin_layout Plain Layout
+参见R帮助文档
+\emph on
+R Language Definition
+\emph default
+的2.1.8节——译者注。
+\end_layout
+
+\end_inset
+
+强制执行，同时保持所有需要的信息都已被提供。下面是
+\series bold
+boot
+\series default
+包中
+\family typewriter
+boot()
+\family default
+函数的一个演示：
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<>>=
+\end_layout
+
+\begin_layout Plain Layout
+
+    fn <- function(r) statistic(data, i[r, ], ...)
+\end_layout
+
+\begin_layout Plain Layout
+
+    RR <- sum(R)
+\end_layout
+
+\begin_layout Plain Layout
+
+    res <- if (ncpus > 1L && (have_mc || have_snow)) {
+\end_layout
+
+\begin_layout Plain Layout
+
+        if (have_mc) {
+\end_layout
+
+\begin_layout Plain Layout
+
+            parallel::mclapply(seq_len(RR), fn, mc.cores = ncpus)
+\end_layout
+
+\begin_layout Plain Layout
+
+        } else if (have_snow) {
+\end_layout
+
+\begin_layout Plain Layout
+
+            list(...) # evaluate any promises
+\end_layout
+
+\begin_layout Plain Layout
+
+            if (is.null(cl)) {
+\end_layout
+
+\begin_layout Plain Layout
+
+                cl <- parallel::makePSOCKcluster(rep("localhost", ncpus))
+\end_layout
+
+\begin_layout Plain Layout
+
+                if(RNGkind()[1L] == "L'Ecuyer-CMRG")
+\end_layout
+
+\begin_layout Plain Layout
+
+                    parallel::clusterSetRNGStream(cl)
+\end_layout
+
+\begin_layout Plain Layout
+
+                res <- parallel::parLapply(cl, seq_len(RR), fn)
+\end_layout
+
+\begin_layout Plain Layout
+
+                parallel::stopCluster(cl)
+\end_layout
+
+\begin_layout Plain Layout
+
+                res
+\end_layout
+
+\begin_layout Plain Layout
+
+            } else parallel::parLapply(cl, seq_len(RR), fn)
+\end_layout
+
+\begin_layout Plain Layout
+
+        }
+\end_layout
+
+\begin_layout Plain Layout
+
+    } else lapply(seq_len(RR), fn)
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+注意到
+\family typewriter
+...
+\family default
+是
+\family typewriter
+boot
+\family default
+的一个参数，所以在运行
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<>>=
+\end_layout
+
+\begin_layout Plain Layout
+
+list(...) # evaluate any promises
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+noindent 
+\end_layout
+
+\end_inset
+
+之后，它将展开为
+\family typewriter
+boot
+\family default
+所在环境中的对象，进而这些对象也将存在于
+\family typewriter
+fn
+\family default
+所在的环境中，最后该环境将连同
+\family typewriter
+fn
+\family default
+一起发送给工人。
+\end_layout
+
+\begin_layout Section
+与之前版本的差别
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+parallel
+\series default
+软件包对并行随机数发生器的支持与
+\series bold
+snow
+\series default
+不同，而
+\series bold
+multicore
+\series default
+不支持并行随机数发生器。
+\end_layout
+
+\begin_layout Subsection
+与multicore的区别
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+multicore
+\series default
+精心编写了一系列代码来使得
+\family typewriter
+R.app
+\family default
+的Aqua事件循环和
+\family typewriter
+quartz
+\family default
+图形设备的事件循环能继承给子进程。在
+\series bold
+parallel
+\series default
+中，取而代之的是在R的执行程序中为子进程做一个标记。
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+detectCores
+\family default
+在计算物理CPU数量时会有偏差，这是由Sparc Solaris下的严重问题引起的，在该系统中
+\series bold
+multicore
+\series default
+会计算得出荒谬的进程数。
+\end_layout
+
+\begin_layout Standard
+函数
+\family typewriter
+fork
+\family default
+和
+\family typewriter
+kill
+\family default
+加上了
+\family typewriter
+mc
+\family default
+前缀，并且没有被导出。这避免了和其他软件包的冲突（例如
+\series bold
+fork
+\series default
+软件包），同时注意到
+\family typewriter
+mckill
+\family default
+并不如
+\family typewriter
+tools::pskill
+\family default
+通用。
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+parallel
+\series default
+包不再提供别名函数
+\family typewriter
+collect
+\family default
+和
+\family typewriter
+parallel
+\family default
+。
+\end_layout
+
+\begin_layout Subsection
+与snow的区别
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+snow
+\series default
+设置的超时超过了POSIX所要求的最大值，并且没有提供为工人设置超时的办法。这会导致Solaris下的进程互锁。
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+makeCluster
+\family default
+通过调用
+\series bold
+snow
+\series default
+来生成MPI或NWS集群。
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+makePSOCKcluster
+\family default
+被加以改进，因为
+\series bold
+parallel
+\series default
+包在所有系统中的位置都是已知的，而且目前
+\family typewriter
+Rscript
+\family default
+程序在所有系统下都可用。对工人的日志记录被设置为追加到文件，所以多重进程都可以被记录到日志中。
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+parSapply
+\family default
+的用法已经与
+\family typewriter
+sapply
+\family default
+保持一致。
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+clusterMap()
+\family default
+加入了
+\family typewriter
+SIMPLIFY
+\family default
+和
+\family typewriter
+USE.NAMES
+\family default
+参数，这使得它成为了并行版本的
+\family typewriter
+mapply
+\family default
+和
+\family typewriter
+Map
+\family default
+。
+\end_layout
+
+\begin_layout Standard
+计时接口没有复制到
+\series bold
+parallel
+\series default
+中。
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset bibtex
+LatexCommand bibtex
+btprint "btPrintAll"
+bibfiles "parallel"
+options "jss"
+
+\end_inset
+
+
+\end_layout
+
+\end_body
+\end_document
